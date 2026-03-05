@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import prisma from "./db/db";
+import prisma from "./prisma/prisma";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,

@@ -1,5 +1,5 @@
 import SignupForm from "@/components/auth-form/signup-form";
-import { Button } from "@/components/ui/button";
+import ContinueWithGoogle from "@/components/social-auth-button/continue-with-google";
 import {
   Card,
   CardContent,
@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Chrome } from "lucide-react";
 import Link from "next/link";
 
 export default function page() {
@@ -21,11 +20,7 @@ export default function page() {
         <CardDescription>Join twitter today</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className='space-y-3 mb-6'>
-          <Button className='bg-white hover:bg-gray-50 border border-gray-300 w-full h-12 text-black'>
-            <Chrome className='mr-1 w-5 h-5' /> signup with google
-          </Button>
-        </div>
+        <ContinueWithGoogle />
 
         <div className='relative mb-6'>
           <div className='absolute inset-0 flex items-center'>

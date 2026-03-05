@@ -6,6 +6,7 @@ import { Label } from "../ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { signupWithEmail } from "@/lib/actions/auth-actions";
+import Loader from "../loader/loader";
 
 type signinFormType = {
   name: string;
@@ -71,6 +72,7 @@ export default function SignupForm() {
             Full Name
           </Label>
           <Input
+            disabled={isLoading}
             id='name'
             type='text'
             placeholder='Enter Your Full Name'
@@ -101,6 +103,7 @@ export default function SignupForm() {
             Username
           </Label>
           <Input
+            disabled={isLoading}
             id='username'
             type='text'
             placeholder='Choose a Username'
@@ -131,6 +134,7 @@ export default function SignupForm() {
             Email
           </Label>
           <Input
+            disabled={isLoading}
             id='email'
             type='email'
             placeholder='Enter Your Email Address'
@@ -148,6 +152,7 @@ export default function SignupForm() {
           </Label>
           <div className='relative'>
             <Input
+              disabled={isLoading}
               id='password'
               type={`${showPassword ? "text" : "password"}`}
               placeholder='Create Your Password'
@@ -193,6 +198,7 @@ export default function SignupForm() {
           </Label>
           <div className='relative'>
             <Input
+              disabled={isLoading}
               id='confirmPassword'
               type={`${showConfirmPassword ? "text" : "password"}`}
               placeholder='Confirm Your Password'
@@ -228,10 +234,17 @@ export default function SignupForm() {
         </div>
 
         <Button
+          disabled={isLoading}
           type='submit'
           className='bg-primary hover:bg-gray-800 w-full h-12 text-primary-foreground'
         >
-          {isLoading ? "Creating..." : "Create Account"}
+          {isLoading ? (
+            <span className='flex justify-center items-center gap-2'>
+              <Loader /> <span>Creating Account.....</span>
+            </span>
+          ) : (
+            "Create Account"
+          )}
         </Button>
       </form>
     </>

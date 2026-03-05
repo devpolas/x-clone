@@ -5,16 +5,22 @@ import { auth } from "../auth";
 import { headers } from "next/headers";
 
 export async function signinWithEmail(email: string, password: string) {
-  const result = await auth.api.signInEmail({
-    body: {
-      email,
-      password,
-    },
-    headers: await headers(),
-  });
+  try {
+    const result = await auth.api.signInEmail({
+      body: {
+        email,
+        password,
+      },
+      headers: await headers(),
+    });
 
-  if (result.user) {
-    redirect("/");
+    if (result.user) {
+      redirect("/");
+    }
+  } catch (error) {
+    if (error) {
+      throw error;
+    }
   }
 }
 
@@ -24,34 +30,46 @@ export async function signupWithEmail(
   name: string,
   username: string,
 ) {
-  const result = await auth.api.signUpEmail({
-    body: {
-      email,
-      password,
-      name,
-      username,
-      bio: "",
-      avatar: "",
-    },
-    headers: await headers(),
-  });
+  try {
+    const result = await auth.api.signUpEmail({
+      body: {
+        email,
+        password,
+        name,
+        username,
+        bio: "",
+        avatar: "",
+      },
+      headers: await headers(),
+    });
 
-  if (result.user) {
-    redirect("/");
+    if (result.user) {
+      redirect("/");
+    }
+  } catch (error) {
+    if (error) {
+      throw error;
+    }
   }
 }
 
 export async function signinWithGoogle() {
-  const result = await auth.api.signInSocial({
-    body: {
-      provider: "google",
-      callbackURL: "/",
-    },
-    headers: await headers(),
-  });
+  try {
+    const result = await auth.api.signInSocial({
+      body: {
+        provider: "google",
+        callbackURL: "/",
+      },
+      headers: await headers(),
+    });
 
-  if (result.url) {
-    redirect(result.url);
+    if (result.url) {
+      redirect(result.url);
+    }
+  } catch (error) {
+    if (error) {
+      throw error;
+    }
   }
 }
 
@@ -64,7 +82,12 @@ export async function signOut() {
 }
 
 export async function getSession() {
-  const result = await auth.api.getSession({ headers: await headers() });
-
-  return result;
+  try {
+    const result = await auth.api.getSession({ headers: await headers() });
+    return result;
+  } catch (error) {
+    if (error) {
+      throw error;
+    }
+  }
 }
