@@ -1,7 +1,7 @@
 "use client";
 import { Chrome } from "lucide-react";
 import { Button } from "../ui/button";
-import { signinWithGoogle } from "@/lib/actions/auth-actions";
+import { signinWithGoogle } from "@/lib/actions/server/auth-actions";
 import { useState } from "react";
 import Loader from "../loader/loader";
 
