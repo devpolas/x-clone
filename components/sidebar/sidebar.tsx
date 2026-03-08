@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { NotificationBadge } from "../notification/notification";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useEffect, useRef, useState } from "react";
+import { signOut } from "@/lib/actions/server/auth-actions";
 
 function getNavigation(username?: string) {
   return [
@@ -111,6 +112,7 @@ export default function Sidebar() {
                 <Button
                   variant={"ghost"}
                   className='flex items-center space-x-2 hover:bg-muted/50 px-4 py-2 w-full text-red-500 text-sm text-left'
+                  onClick={() => signOut()}
                 >
                   <LogOut />
                   <span>Logout</span>
