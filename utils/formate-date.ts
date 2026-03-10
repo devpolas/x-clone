@@ -1,6 +1,10 @@
 export function formatTimeAgo(date: Date) {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
 
+  if (seconds < 60) {
+    return "Just now"; // show "Just now" if less than 1 minute
+  }
+
   const intervals = [
     { label: "y", seconds: 31536000 },
     { label: "mo", seconds: 2592000 },
@@ -17,7 +21,7 @@ export function formatTimeAgo(date: Date) {
     }
   }
 
-  return `${seconds}s`;
+  return "Just now"; // fallback, shouldn't hit often
 }
 
 export function formatDate(date: Date) {
