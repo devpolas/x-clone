@@ -8,6 +8,7 @@ import { NotificationBadge } from "../notification/notification";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useEffect, useRef, useState } from "react";
 import { signOut } from "@/lib/actions/server/auth-actions";
+import { ThemeSwitcher } from "../theme/theme-switcher";
 
 function getNavigation(username?: string) {
   return [
@@ -44,9 +45,15 @@ export default function Sidebar() {
 
   return (
     <div className='flex flex-col bg-background border-border border-r w-64 h-screen'>
-      <div className='p-4'>
-        <div className='flex justify-center items-center bg-primary rounded-full w-8 h-8'>
-          <span className='font-bold text-primary-foreground text-lg'>X</span>
+      <div className='flex flex-row items-center'>
+        <div className='p-4'>
+          <div className='flex justify-center items-center bg-primary rounded-full w-8 h-8'>
+            <span className='font-bold text-primary-foreground text-lg'>X</span>
+          </div>
+        </div>
+
+        <div className='mx-[50%]'>
+          <ThemeSwitcher />
         </div>
       </div>
 
