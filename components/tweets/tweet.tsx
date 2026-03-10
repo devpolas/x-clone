@@ -1,4 +1,4 @@
-import { formateTimeAgo } from "@/utils/formate-date";
+import { formatTimeAgo } from "@/utils/formate-date";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Heart, MessageCircle, Repeat2, Share } from "lucide-react";
@@ -25,7 +25,7 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
     <div className='hover:bg-muted/50 p-4 border-border border-b cursor-pointer'>
       <div className='flex space-x-3'>
         <Avatar className='w-10 h-10'>
-          <AvatarImage src={tweet.author.avatar ?? ""} />
+          <AvatarImage src={tweet.author.avatar ?? undefined} />
           <AvatarFallback> {getInitials(tweet.author.name)} </AvatarFallback>
         </Avatar>
 
@@ -37,7 +37,7 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
             </span>
             <span className='text-muted-foreground'>.</span>
             <span className='text-muted-foreground'>
-              {formateTimeAgo(tweet.createdAt)}
+              {formatTimeAgo(tweet.createdAt)} ago
             </span>
           </div>
           <p className='text-foreground whitespace-pre-wrap'>{tweet.content}</p>

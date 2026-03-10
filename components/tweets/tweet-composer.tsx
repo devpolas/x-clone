@@ -8,6 +8,11 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { ImageIcon } from "lucide-react";
 import { useState } from "react";
+import { createTweet } from "@/lib/actions/tweet/tweets-actions";
+import { useRouter } from "next/navigation";
+import Loader from "../loader/loader";
+import { toast } from "sonner";
+import { formatDate } from "@/utils/formate-date";
 
 interface TweetComposerProps {
   user?: sessionUser;
@@ -23,14 +28,49 @@ export default function TweetComposer({
   onCancel,
 }: TweetComposerProps) {
   const [content, setContent] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
+
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!content.trim() || isLoading) return;
+
+    setIsLoading(true);
+
+    try {
+      const result = await createTweet(content.trim());
+      if (result.success) {
+        setContent("");
+        router.refresh();
+
+        toast.success("Tweet has been created", {
+          position: "top-center",
+          description: formatDate(new Date()),
+        });
+      } else {
+        toast.error("Failed to tweet!", {
+          position: "top-center",
+          description: formatDate(new Date()),
+        });
+      }
+    } catch (error) {
+      toast.error("Failed to tweet!", {
+        position: "top-center",
+        description: formatDate(new Date()),
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <div className='p-4 border-border border-b'>
-      <form className='space-y-3'>
+      <form className='space-y-3' onSubmit={handleSubmit}>
         <div className='flex space-x-3'>
           {user && (
             <Avatar className='w-10 h-10'>
-              <AvatarImage src={user.avatar ?? ""} />
+              <AvatarImage src={user.avatar ?? undefined} />
               <AvatarFallback> {getInitials(user.name ?? "")} </AvatarFallback>
             </Avatar>
           )}
@@ -63,9 +103,17 @@ export default function TweetComposer({
                 <Button
                   type='submit'
                   className=''
-                  disabled={!content.trim() || content.length > 280}
+                  disabled={
+                    !content.trim() || content.length > 280 || isLoading
+                  }
                 >
-                  Tweet
+                  {isLoading ? (
+                    <span className='flex justify-center items-center gap-2'>
+                      <Loader /> <span>Tweeting.....</span>
+                    </span>
+                  ) : (
+                    "Tweet"
+                  )}
                 </Button>
               </div>
             </div>
