@@ -2,6 +2,7 @@ import { formateTimeAgo } from "@/utils/formate-date";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Heart, MessageCircle, Repeat2, Share } from "lucide-react";
+import { getInitials } from "@/utils/get-initials";
 
 interface TweetProps {
   tweet: {
@@ -20,15 +21,6 @@ interface TweetProps {
 }
 
 export default function Tweet({ tweet, currentUserId }: TweetProps) {
-  function getInitials(name: string) {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  }
-
   return (
     <div className='hover:bg-muted/50 p-4 border-border border-b cursor-pointer'>
       <div className='flex space-x-3'>

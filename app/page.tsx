@@ -1,4 +1,5 @@
 import Tweet from "@/components/tweets/tweet";
+import TweetComposer from "@/components/tweets/tweet-composer";
 import MainLayout from "@/layouts/main-layout";
 import { getSession } from "@/lib/actions/server/auth-actions";
 import { getTweets } from "@/lib/actions/tweet/tweets-actions";
@@ -14,6 +15,8 @@ export default async function page() {
           <h1 className='font-bold text-xl'>Home</h1>
         </div>
       </div>
+
+      <TweetComposer user={session?.user} />
 
       <div className='divide-y divide-border'>
         {tweets.length > 0 ? (
