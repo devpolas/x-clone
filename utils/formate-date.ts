@@ -1,17 +1,16 @@
 export function formatTimeAgo(date: Date) {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
 
-  if (seconds < 60) {
-    return "Just now"; // show "Just now" if less than 1 minute
-  }
+  if (seconds < 10) return "Just now"; // very recent
+  if (seconds < 60) return `${seconds}s`; // show seconds for 10–59s
 
   const intervals = [
-    { label: "y", seconds: 31536000 },
-    { label: "mo", seconds: 2592000 },
-    { label: "w", seconds: 604800 },
-    { label: "d", seconds: 86400 },
-    { label: "h", seconds: 3600 },
     { label: "m", seconds: 60 },
+    { label: "h", seconds: 3600 },
+    { label: "d", seconds: 86400 },
+    { label: "w", seconds: 604800 },
+    { label: "mo", seconds: 2592000 },
+    { label: "y", seconds: 31536000 },
   ];
 
   for (const interval of intervals) {
@@ -21,7 +20,7 @@ export function formatTimeAgo(date: Date) {
     }
   }
 
-  return "Just now"; // fallback, shouldn't hit often
+  return "Just now";
 }
 
 export function formatDate(date: Date) {

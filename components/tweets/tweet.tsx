@@ -39,7 +39,7 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
             </span>
             <span className='text-muted-foreground'>.</span>
             <span className='text-muted-foreground'>
-              {formatTimeAgo(tweet.createdAt)} ago
+              {formatTimeAgo(tweet.createdAt)}
             </span>
           </div>
 
