@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { Heart, MessageCircle, Repeat2, Share } from "lucide-react";
 import { getInitials } from "@/utils/get-initials";
 import { CldImage } from "next-cloudinary";
+import { TweetContent } from "./tweet-content";
 
 interface TweetProps {
   tweet: {
@@ -45,7 +46,7 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
 
           {/* tweet content  */}
 
-          <p className='text-foreground whitespace-pre-wrap'>{tweet.content}</p>
+          <TweetContent content={tweet.content} />
 
           {tweet.imageUrl && (
             <div className='mt-3'>
