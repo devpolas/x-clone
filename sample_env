@@ -18,6 +18,6 @@ DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
 # ================================
 # Cloudinary
 # ================================
-NEXT_PUBLIC_CLOUDNARY_CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDNARY_API_KEY=your_cloudinary_api_key
-CLOUDNARY_SECRET=your_cloudinary_secret
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_SECRET=your_cloudinary_secret
