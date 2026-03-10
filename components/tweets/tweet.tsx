@@ -1,8 +1,10 @@
+"use client";
 import { formatTimeAgo } from "@/utils/formate-date";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Heart, MessageCircle, Repeat2, Share } from "lucide-react";
 import { getInitials } from "@/utils/get-initials";
+import { CldImage } from "next-cloudinary";
 
 interface TweetProps {
   tweet: {
@@ -40,7 +42,23 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
               {formatTimeAgo(tweet.createdAt)} ago
             </span>
           </div>
+
+          {/* tweet content  */}
+
           <p className='text-foreground whitespace-pre-wrap'>{tweet.content}</p>
+
+          {tweet.imageUrl && (
+            <div className='mt-3'>
+              <CldImage
+                src={tweet.imageUrl}
+                alt='tweet image'
+                height={600}
+                width={800}
+                className='rounded-lg max-w-full max-h-96 object-cover'
+                sizes='(max-width: 768px) 100vw, (max-width: 1200), 50vw, 33vw'
+              />
+            </div>
+          )}
 
           <div className='flex flex-row items-center gap-x-6 text-muted-foreground'>
             <Button
