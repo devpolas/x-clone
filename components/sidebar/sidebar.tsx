@@ -1,5 +1,5 @@
 "use client";
-import { authClient } from "@/lib/actions/client/auth-client";
+import { authClient } from "@/lib/actions/client/auth-client-actions";
 import { Home, LogOut, MoreHorizontal, User } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
