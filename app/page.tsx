@@ -10,10 +10,8 @@ export default async function page() {
   const tweets = tweetsResult.success ? tweetsResult.tweets || [] : [];
   return (
     <MainLayout>
-      <div className='border-border border-b'>
-        <div className='p-4'>
-          <h1 className='font-bold text-xl'>Home</h1>
-        </div>
+      <div className='top-0 z-10 sticky bg-background p-4 border-border border-b'>
+        <h1 className='font-bold text-xl'>Home</h1>
       </div>
 
       <TweetComposer user={session?.user} />

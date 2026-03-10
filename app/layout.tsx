@@ -33,7 +33,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          {children}
+          <main className='mx-auto max-w-7xl'>{children}</main>
           <Toaster />
         </ThemeProvider>
       </body>
