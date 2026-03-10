@@ -1,0 +1,23 @@
+# ================================
+# App
+# ================================
+BETTER_AUTH_SECRET=your_auth_secret_here
+BETTER_AUTH_URL=http://localhost:3000
+
+# ================================
+# Google OAuth
+# ================================
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# ================================
+# Database (PostgreSQL / Prisma)
+# ================================
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
+
+# ================================
+# Cloudinary
+# ================================
+NEXT_PUBLIC_CLOUDNARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDNARY_API_KEY=your_cloudinary_api_key
+CLOUDNARY_SECRET=your_cloudinary_secret
