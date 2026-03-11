@@ -57,6 +57,7 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
     try {
       const result = await createTweetReply(tweet.id, content, imageUrl);
       if (result.success) {
+        setShowReplyComposer(false);
         router.refresh();
       }
     } catch (error) {
