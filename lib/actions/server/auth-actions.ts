@@ -15,11 +15,12 @@ export async function signinWithEmail(email: string, password: string) {
     });
 
     if (result.user) {
-      redirect("/");
+      return { success: true, message: "successfully signin" };
     }
   } catch (error) {
     if (error) {
-      throw error;
+      console.error("signin error", error);
+      return { success: false, message: "failed to signin" };
     }
   }
 }
@@ -44,11 +45,12 @@ export async function signupWithEmail(
     });
 
     if (result.user) {
-      redirect("/");
+      return { success: true, message: "successfully signin" };
     }
   } catch (error) {
     if (error) {
-      throw error;
+      console.error("signin error", error);
+      return { success: false, message: "failed to signin" };
     }
   }
 }
@@ -64,11 +66,12 @@ export async function signinWithGoogle() {
     });
 
     if (result.url) {
-      redirect(result.url);
+      return { success: true, message: "successfully signin" };
     }
   } catch (error) {
     if (error) {
-      throw error;
+      console.error("signin error", error);
+      return { success: false, message: "failed to signin" };
     }
   }
 }

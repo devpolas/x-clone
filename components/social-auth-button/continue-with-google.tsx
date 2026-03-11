@@ -1,15 +1,23 @@
 "use client";
-import { Chrome } from "lucide-react";
+
 import { Button } from "../ui/button";
 import { signinWithGoogle } from "@/lib/actions/server/auth-actions";
 import { useState } from "react";
 import Loader from "../loader/loader";
+import G_ICON from "@/assets/google.svg";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function ContinueWithGoogle() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   async function handleGoogleSignin() {
     setIsLoading(true);
-    await signinWithGoogle();
+    const result = await signinWithGoogle();
+
+    if (result?.success) {
+      router.push("/");
+    }
 
     setIsLoading(false);
   }
@@ -18,15 +26,23 @@ export default function ContinueWithGoogle() {
       <Button
         disabled={isLoading}
         onClick={handleGoogleSignin}
-        className='bg-white hover:bg-gray-50 border border-gray-300 w-full h-12 text-black'
+        className='w-full h-12 text-primary'
+        variant={"secondary"}
       >
         {isLoading ? (
           <span className='flex justify-center items-center gap-2'>
-            <Loader /> <span>signup with google</span>
+            <Loader /> <span>Continue with google</span>
           </span>
         ) : (
           <span className='flex justify-center items-center gap-2'>
-            <Chrome className='mr-1 w-5 h-5' /> <span>signup with google</span>
+            <Image
+              src={G_ICON}
+              alt='google icon'
+              height={20}
+              width={20}
+              className='w-5 h-5 object-cover'
+            />
+            <span>Continue with google</span>
           </span>
         )}
       </Button>

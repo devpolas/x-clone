@@ -7,6 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { signupWithEmail } from "@/lib/actions/server/auth-actions";
 import Loader from "../loader/loader";
+import { useRouter } from "next/navigation";
 
 type signinFormType = {
   name: string;
@@ -17,6 +18,7 @@ type signinFormType = {
 };
 
 export default function SignupForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isError, setIsError] = useState("");
@@ -44,12 +46,16 @@ export default function SignupForm() {
       setIsLoading(true);
       setIsError("");
 
-      await signupWithEmail(
+      const result = await signupWithEmail(
         data.email,
         data.password,
         data.name,
         data.username,
       );
+
+      if (result?.success) {
+        router.push("/");
+      }
     } catch (error) {
       if (error) {
         setIsError("An error occurred");
@@ -234,9 +240,10 @@ export default function SignupForm() {
         </div>
 
         <Button
+          variant={"secondary"}
           disabled={isLoading}
           type='submit'
-          className='bg-primary hover:bg-gray-800 w-full h-12 text-primary-foreground'
+          className='w-full h-12 text-primary'
         >
           {isLoading ? (
             <span className='flex justify-center items-center gap-2'>

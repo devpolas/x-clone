@@ -7,6 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { signinWithEmail } from "@/lib/actions/server/auth-actions";
 import Loader from "../loader/loader";
+import { useRouter } from "next/navigation";
 
 type SigninData = {
   email: string;
@@ -14,6 +15,7 @@ type SigninData = {
 };
 
 export default function SigninForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState("");
@@ -34,7 +36,10 @@ export default function SigninForm() {
       setIsLoading(true);
       setIsError("");
 
-      await signinWithEmail(data.email, data.password);
+      const result = await signinWithEmail(data.email, data.password);
+      if (result?.success) {
+        router.push("/");
+      }
     } catch (error) {
       if (error) {
         setIsError("Invalid Credentials");
@@ -103,9 +108,10 @@ export default function SigninForm() {
           )}
         </div>
         <Button
+          variant={"secondary"}
           disabled={isLoading}
           type='submit'
-          className='bg-primary hover:bg-gray-800 w-full h-12 text-primary-foreground'
+          className='w-full h-12 text-primary'
         >
           {isLoading ? (
             <span className='flex justify-center items-center gap-2'>
