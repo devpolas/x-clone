@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma/prisma";
 import { getSession } from "../server/auth-actions";
 import { redirect } from "next/navigation";
+import { TweetType } from "@/types/tweet";
 
 export async function createTweet(content: string, imageUrl?: string) {
   const session = await getSession();
@@ -85,9 +86,16 @@ export async function getTweetById(id: string) {
 
 export async function getTweetRepliesById(id: string) {
   try {
-    const tweetReplies = await prisma.tweet.findMany({
+    const replies = await prisma.tweet.findMany({
       where: {
-        parentId: id,
+        OR: [
+          { parentId: id },
+          {
+            parent: {
+              parentId: id,
+            },
+          },
+        ],
       },
       include: {
         author: {
@@ -99,16 +107,15 @@ export async function getTweetRepliesById(id: string) {
           },
         },
       },
+      orderBy: {
+        createdAt: "asc",
+      },
     });
 
-    if (!tweetReplies) {
-      return { success: false, error: "tweet replies was not found!" };
-    }
-
-    return { success: true, tweetReplies };
+    return { success: true, tweetReplies: replies };
   } catch (error) {
-    console.error("error fetching tweet replies", error);
-    return { success: false, error: "failed to fetch tweet replies" };
+    console.error(error);
+    return { success: false, error: "Failed to fetch replies" };
   }
 }
 

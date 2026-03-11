@@ -94,5 +94,9 @@ model Tweet {
   parent Tweet? @relation("TweetReplies", fields: [parentId],references: [id], onDelete: Cascade)
   replies Tweet[] @relation("TweetReplies")
 
+  @@index([authorId])
+  @@index([parentId])
+  @@index([createdAt])
+
   @@map("tweets")
 }
