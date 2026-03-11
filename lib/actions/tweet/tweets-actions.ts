@@ -83,9 +83,39 @@ export async function getTweetById(id: string) {
   }
 }
 
+export async function getTweetRepliesById(id: string) {
+  try {
+    const tweetReplies = await prisma.tweet.findMany({
+      where: {
+        parentId: id,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    if (!tweetReplies) {
+      return { success: false, error: "tweet replies was not found!" };
+    }
+
+    return { success: true, tweetReplies };
+  } catch (error) {
+    console.error("error fetching tweet replies", error);
+    return { success: false, error: "failed to fetch tweet replies" };
+  }
+}
+
 export async function getTweets() {
   try {
     const tweets = await prisma.tweet.findMany({
+      where: { parentId: null },
       include: {
         author: {
           select: {

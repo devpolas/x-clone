@@ -1,6 +1,9 @@
 import TweetDetails from "@/components/tweets/tweet-details";
 import { getSession } from "@/lib/actions/server/auth-actions";
-import { getTweetById } from "@/lib/actions/tweet/tweets-actions";
+import {
+  getTweetById,
+  getTweetRepliesById,
+} from "@/lib/actions/tweet/tweets-actions";
 import { redirect } from "next/navigation";
 
 export default async function TweetPage({
@@ -22,10 +25,12 @@ export default async function TweetPage({
     redirect("/");
   }
 
+  const tweetReplies = await getTweetRepliesById(id);
+
   return (
     <TweetDetails
       tweet={tweet.tweet}
-      replies={null}
+      replies={tweetReplies.tweetReplies ?? []}
       currentUserId={session?.user.id}
     />
   );

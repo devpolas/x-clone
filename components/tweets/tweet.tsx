@@ -10,7 +10,10 @@ import Link from "next/link";
 import TweetComposer from "./tweet-composer";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { createTweetReply } from "@/lib/actions/tweet/tweets-actions";
+import {
+  createTweetReply,
+  getTweetRepliesById,
+} from "@/lib/actions/tweet/tweets-actions";
 import { toast } from "sonner";
 
 interface TweetProps {
@@ -31,16 +34,10 @@ interface TweetProps {
 
 export default function Tweet({ tweet, currentUserId }: TweetProps) {
   const [showReplyComposer, setShowReplyComposer] = useState<boolean>(false);
+  const [replyCount, setReplyCount] = useState<number>(0);
   const router = useRouter();
   const pathname = usePathname();
-  const isTweetPage = pathname.startsWith("/tweet/");
-
-  useEffect(() => {
-    if (isTweetPage) {
-      // eslint-disable-next-line
-      setShowReplyComposer(true);
-    }
-  }, [isTweetPage]);
+  const isTweetPage = pathname.includes("/tweet/");
 
   function handleRouting() {
     if (pathname === "/") {
@@ -69,6 +66,14 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
       });
     }
   }
+
+  useEffect(() => {
+    async function fetchReplies() {
+      const res = await getTweetRepliesById(tweet.id);
+      setReplyCount(res.success ? (res.tweetReplies?.length ?? 0) : 0);
+    }
+    fetchReplies();
+  }, [tweet.id]);
 
   return (
     <>
@@ -121,6 +126,7 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
                 onClick={handleTweetState}
               >
                 <MessageCircle className='w-4 h-4' />
+                <span>{replyCount ?? 0}</span>
               </Button>
 
               <Button

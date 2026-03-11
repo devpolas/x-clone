@@ -87,7 +87,7 @@ export default function Sidebar() {
       <div className='p-4 border-border border-t'>
         <div className='flex justify-between items-center space-x-3 hover:bg-muted p-4 rounded-md'>
           <Link
-            className='flex flex-row justify-center gap-2 cursor-pointer'
+            className='flex flex-row flex-1 items-center space-x-3 min-w-0 cursor-pointer'
             href={`/profile/${username}`}
           >
             <Avatar className='w-10 h-10'>
