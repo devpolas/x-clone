@@ -14,12 +14,11 @@ import Loader from "../loader/loader";
 import { toast } from "sonner";
 import { formatDate } from "@/utils/formate-date";
 import Image from "next/image";
-import { error } from "console";
 
 interface TweetComposerProps {
   user?: sessionUser;
   placeholder?: string;
-  onSubmit?: () => void;
+  onSubmit?: (content: string, imageUrl?: string) => void;
   onCancel?: () => void;
 }
 
@@ -103,22 +102,29 @@ export default function TweetComposer({
         setIsImageUploading(false);
       }
 
-      const result = await createTweet(content.trim(), imageUrl);
-      if (result.success) {
+      if (onSubmit) {
+        onSubmit(content.trim(), imageUrl);
         setContent("");
         setSelectedFile(null);
         setSelectedImage(null);
-        router.refresh();
-
-        toast.success("Tweet has been created", {
-          position: "top-center",
-          description: formatDate(new Date()),
-        });
       } else {
-        toast.error("Failed to tweet!", {
-          position: "top-center",
-          description: formatDate(new Date()),
-        });
+        const result = await createTweet(content.trim(), imageUrl);
+        if (result.success) {
+          setContent("");
+          setSelectedFile(null);
+          setSelectedImage(null);
+          router.refresh();
+
+          toast.success("Tweet has been created", {
+            position: "top-center",
+            description: formatDate(new Date()),
+          });
+        } else {
+          toast.error("Failed to tweet!", {
+            position: "top-center",
+            description: formatDate(new Date()),
+          });
+        }
       }
     } catch (error) {
       toast.error("Failed to tweet!", {
@@ -206,6 +212,17 @@ export default function TweetComposer({
                 <span className='text-muted-foreground text-sm'>
                   {content.length}/280
                 </span>
+
+                {onCancel && (
+                  <Button
+                    variant={"destructive"}
+                    className='px-6 cursor-pointer'
+                    type='button'
+                    onClick={onCancel}
+                  >
+                    Cancel
+                  </Button>
+                )}
 
                 <Button
                   type='submit'

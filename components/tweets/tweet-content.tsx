@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 
 interface TweetContentProps {
@@ -15,14 +16,12 @@ export function TweetContent({ content }: TweetContentProps) {
 
   const parts = content.split(SPLIT_REGEX).filter(Boolean);
 
-  console.log(parts);
-
   return (
     <p className='text-foreground warp-break-words whitespace-pre-wrap'>
       {parts.map((part, i) => {
         if (URL_REGEX.test(part)) {
           return (
-            <a
+            <Link
               key={i}
               href={part}
               target='_blank'
@@ -30,31 +29,31 @@ export function TweetContent({ content }: TweetContentProps) {
               className='text-blue-500 hover:underline'
             >
               {part}
-            </a>
+            </Link>
           );
         }
 
         if (HASHTAG_REGEX.test(part)) {
           return (
-            <a
+            <Link
               key={i}
               href={`/hashtag/${part.slice(1)}`}
               className='text-blue-500 hover:underline'
             >
               {part}
-            </a>
+            </Link>
           );
         }
 
         if (MENTION_REGEX.test(part)) {
           return (
-            <a
+            <Link
               key={i}
               href={`/profile/${part.slice(1)}`}
               className='text-blue-500 hover:underline'
             >
               {part}
-            </a>
+            </Link>
           );
         }
 
