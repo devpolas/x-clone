@@ -31,7 +31,6 @@ export default async function TweetPage({
     <TweetDetails
       tweet={tweet.tweet}
       replies={tweetReplies.tweetReplies ?? []}
-      currentUserId={session?.user.id}
     />
   );
 }
