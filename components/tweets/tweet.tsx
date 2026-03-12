@@ -102,7 +102,7 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
     <>
       <div className='hover:bg-muted/50 p-4 border-border border-b'>
         <div className='flex space-x-3'>
-          <Link href={`/profile/${tweet.author.id}`}>
+          <Link href={`/profile/${tweet.author.username}`}>
             <Avatar className='w-10 h-10 cursor-pointer'>
               <AvatarImage src={tweet.author.avatar ?? undefined} />
               <AvatarFallback>{getInitials(tweet.author.name)} </AvatarFallback>
@@ -111,12 +111,14 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
 
           <div className='flex-1 space-y-2'>
             <div className='flex items-center space-x-2'>
-              <Link href={`/profile/${tweet.author.id}`}>
+              <Link href={`/profile/${tweet.author.username}`}>
                 <span className='font-semibold'>{tweet.author.name}</span>
               </Link>
-              <span className='text-muted-foreground'>
-                @{tweet.author.username}
-              </span>
+              <Link href={`/profile/${tweet.author.username}`}>
+                <span className='text-muted-foreground'>
+                  @{tweet.author.username}
+                </span>
+              </Link>
               <span className='text-muted-foreground'>.</span>
               <span className='text-muted-foreground'>
                 {formatTimeAgo(tweet.createdAt)}
