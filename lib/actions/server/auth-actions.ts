@@ -1,28 +1,31 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { auth } from "../../auth";
 import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 
-export async function signinWithEmail(email: string, password: string) {
-  try {
-    const result = await auth.api.signInEmail({
-      body: {
-        email,
-        password,
-      },
-      headers: await headers(),
-    });
+type AuthResult = { success: boolean; message: string };
 
-    if (result.user) {
-      return { success: true, message: "successfully signin" };
-    }
-  } catch (error) {
-    if (error) {
-      console.error("signin error", error);
-      return { success: false, message: "failed to signin" };
-    }
+// Helper to get headers once
+async function getHeaders() {
+  return await headers();
+}
+
+export async function signinWithEmail(
+  email: string,
+  password: string,
+): Promise<AuthResult> {
+  const result = await auth.api.signInEmail({
+    body: { email, password },
+    headers: await getHeaders(),
+  });
+
+  if (result.user) {
+    return { success: true, message: "Successfully signed in" };
   }
+
+  // Explicit failure if no user returned
+  return { success: false, message: "Failed to sign in" };
 }
 
 export async function signupWithEmail(
@@ -30,67 +33,52 @@ export async function signupWithEmail(
   password: string,
   name: string,
   username: string,
-) {
-  try {
-    const result = await auth.api.signUpEmail({
-      body: {
-        email,
-        password,
-        name,
-        username,
-        bio: "",
-        avatar: "",
-      },
-      headers: await headers(),
-    });
+): Promise<AuthResult> {
+  const result = await auth.api.signUpEmail({
+    body: {
+      email,
+      password,
+      name,
+      username,
+      bio: "",
+      avatar: "",
+    },
+    headers: await getHeaders(),
+  });
 
-    if (result.user) {
-      return { success: true, message: "successfully signin" };
-    }
-  } catch (error) {
-    if (error) {
-      console.error("signin error", error);
-      return { success: false, message: "failed to signin" };
-    }
+  if (result.user) {
+    return { success: true, message: "Successfully signed up" };
+  }
+
+  return { success: false, message: "Failed to sign up" };
+}
+
+export async function signinWithGoogle(): Promise<AuthResult> {
+  const result = await auth.api.signInSocial({
+    body: {
+      provider: "google",
+      callbackURL: "/",
+    },
+    headers: await getHeaders(),
+  });
+
+  if (result.url) {
+    redirect(result.url);
+  } else {
+    console.error("Google signin error: no redirect URL returned");
+    return { success: false, message: "Google auth failed" };
   }
 }
 
-export async function signinWithGoogle() {
-  try {
-    const result = await auth.api.signInSocial({
-      body: {
-        provider: "google",
-        callbackURL: "/",
-      },
-      headers: await headers(),
-    });
-
-    if (result.url) {
-      return { success: true, message: "successfully signin" };
-    }
-  } catch (error) {
-    if (error) {
-      console.error("signin error", error);
-      return { success: false, message: "failed to signin" };
-    }
-  }
-}
-
-export async function signOut() {
-  const result = await auth.api.signOut({ headers: await headers() });
-
+export async function signOut(): Promise<void> {
+  const result = await auth.api.signOut({ headers: await getHeaders() });
   if (result.success) {
-    redirect("/signin");
+    redirect("/");
+  } else {
+    console.error("signOut failed");
   }
 }
 
 export async function getSession() {
-  try {
-    const result = await auth.api.getSession({ headers: await headers() });
-    return result;
-  } catch (error) {
-    if (error) {
-      throw error;
-    }
-  }
+  return await auth.api.getSession({ headers: await getHeaders() });
 }
