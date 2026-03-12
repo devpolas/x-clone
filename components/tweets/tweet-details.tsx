@@ -11,9 +11,15 @@ import { TweetType } from "@/types/tweet";
 interface TweetDetailsProps {
   tweet: TweetType;
   replies: TweetType[];
+
+  currentUserId?: string;
 }
 
-export default function TweetDetails({ tweet, replies }: TweetDetailsProps) {
+export default function TweetDetails({
+  tweet,
+  replies,
+  currentUserId,
+}: TweetDetailsProps) {
   const router = useRouter();
 
   const replyTree = buildReplyTree(replies, tweet.id);
@@ -35,12 +41,12 @@ export default function TweetDetails({ tweet, replies }: TweetDetailsProps) {
       </div>
 
       {/* Main Tweet */}
-      <Tweet tweet={tweet} />
+      <Tweet tweet={tweet} currentUserId={currentUserId} />
 
       {/* Replies */}
       <div className='divide-y divide-border'>
         {replyTree.length > 0 ? (
-          <ReplyThread replies={replyTree} />
+          <ReplyThread replies={replyTree} currentUserId={currentUserId} />
         ) : (
           <div className='p-8 text-muted-foreground text-center'>
             <MessageCircle className='opacity-50 mx-auto mb-4 w-12 h-12' />
