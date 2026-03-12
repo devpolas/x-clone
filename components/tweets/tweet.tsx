@@ -13,8 +13,10 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   createTweetReply,
   getTweetRepliesById,
+  likeTweet,
 } from "@/lib/actions/tweet/tweets-actions";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface TweetProps {
   tweet: {
@@ -28,6 +30,8 @@ interface TweetProps {
       username?: string | null;
       avatar?: string | null;
     };
+
+    likes: Array<{ id: string; userId: string }>;
   };
   currentUserId?: string;
 }
@@ -38,6 +42,9 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
   const router = useRouter();
   const pathname = usePathname();
   const isTweetPage = pathname.includes("/tweet/");
+  const isLiked = currentUserId
+    ? tweet.likes.some((like) => like.userId === currentUserId)
+    : false;
 
   function handleRouting() {
     if (pathname === "/") {
@@ -65,6 +72,21 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
         position: "top-center",
         description: formatDate(new Date()),
       });
+    }
+  }
+
+  // handleLike
+  async function handleLike() {
+    try {
+      const result = await likeTweet(tweet.id);
+      if (result.success) {
+        console.log("like");
+        router.refresh();
+      } else if (!result.auth) {
+        router.push("/signin");
+      }
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -140,8 +162,15 @@ export default function Tweet({ tweet, currentUserId }: TweetProps) {
               <Button
                 variant={"ghost"}
                 className='flex items-center space-x-2 hover:text-red-500 cursor-pointer'
+                onClick={handleLike}
               >
-                <Heart className='w-4 h-4' /> <span>1</span>
+                <Heart
+                  className={cn(
+                    isLiked ? "text-red-500 fill-red-500" : "",
+                    "w-4 h-4",
+                  )}
+                />{" "}
+                <span>{tweet.likes.length ?? 0}</span>
               </Button>
               <Button
                 variant={"ghost"}

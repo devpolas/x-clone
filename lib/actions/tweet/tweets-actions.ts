@@ -3,13 +3,12 @@
 import prisma from "@/lib/prisma/prisma";
 import { getSession } from "../server/auth-actions";
 import { redirect } from "next/navigation";
-import { TweetType } from "@/types/tweet";
 
 export async function createTweet(content: string, imageUrl?: string) {
   const session = await getSession();
 
   if (!session?.user) {
-    redirect("/signin");
+    return { success: false, auth: false };
   }
 
   try {
@@ -27,6 +26,7 @@ export async function createTweet(content: string, imageUrl?: string) {
     return { success: false, error: "failed to create tweet" };
   }
 }
+
 export async function createTweetReply(
   tweetId: string,
   content: string,
@@ -35,7 +35,7 @@ export async function createTweetReply(
   const session = await getSession();
 
   if (!session?.user) {
-    redirect("/signin");
+    return { success: false, auth: false };
   }
 
   try {
@@ -70,6 +70,7 @@ export async function getTweetById(id: string) {
             avatar: true,
           },
         },
+        likes: true,
       },
     });
 
@@ -106,6 +107,7 @@ export async function getTweetRepliesById(id: string) {
             avatar: true,
           },
         },
+        likes: true,
       },
       orderBy: {
         createdAt: "asc",
@@ -132,6 +134,7 @@ export async function getTweets() {
             avatar: true,
           },
         },
+        likes: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -142,5 +145,43 @@ export async function getTweets() {
   } catch (error) {
     console.error("error fetching tweets", error);
     return { success: false, error: "failed to fetch tweets" };
+  }
+}
+
+export async function likeTweet(tweetId: string) {
+  const session = await getSession();
+  if (!session?.user) {
+    return { success: false, auth: false };
+  }
+
+  try {
+    const exitingLike = await prisma.like.findUnique({
+      where: {
+        userId_tweetId: {
+          userId: session.user.id,
+          tweetId,
+        },
+      },
+    });
+
+    if (exitingLike) {
+      await prisma.like.delete({
+        where: {
+          id: exitingLike.id,
+        },
+      });
+      return { success: true, action: "unLiked" };
+    } else {
+      await prisma.like.create({
+        data: {
+          userId: session.user.id,
+          tweetId,
+        },
+      });
+      return { success: true, action: "liked" };
+    }
+  } catch (error) {
+    console.error("failed to like and unLiked", error);
+    return { success: false, error: "failed to liked" };
   }
 }

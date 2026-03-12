@@ -27,6 +27,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   tweets        Tweet[]
+  likes         Like[]
 
   @@unique([email])
   @@map("user")
@@ -89,6 +90,7 @@ model Tweet {
   parentId String? @map("parentId")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  likes      Like[]
 
   author User @relation(fields: [authorId],references: [id], onDelete: Cascade)
   parent Tweet? @relation("TweetReplies", fields: [parentId],references: [id], onDelete: Cascade)
@@ -99,4 +101,18 @@ model Tweet {
   @@index([createdAt])
 
   @@map("tweets")
+}
+
+
+model Like{
+  id String @id @default(uuid())
+  userId String @map("userId")
+  tweetId String @map("tweetId")
+  createdAt  DateTime @default(now())
+
+  tweet Tweet @relation(fields: [tweetId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tweetId])
+  @@map("likes")
 }
