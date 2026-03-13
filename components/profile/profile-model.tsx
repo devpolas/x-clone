@@ -108,7 +108,7 @@ export default function ProfileModel({
           position: "top-center",
           description: formatDate(new Date()),
         });
-        router.refresh();
+        router.push(`/profile/${result.user?.username}`);
         onClose();
       } else {
         toast.error(result.error || "Failed to update profile!", {
