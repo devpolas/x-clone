@@ -14,7 +14,7 @@ import {
   createTweetReply,
   getTweetRepliesById,
   likeTweet,
-} from "@/lib/actions/tweet/tweets-actions";
+} from "@/lib/actions/server/tweet/tweets-actions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 

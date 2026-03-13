@@ -1,5 +1,5 @@
 "use client";
-import { authClient } from "@/lib/actions/client/auth-client-actions";
+import { authClient } from "@/lib/actions/client/auth/auth-client-actions";
 import { Home, LogOut, MoreHorizontal, User } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { NotificationBadge } from "../notification/notification";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useEffect, useRef, useState } from "react";
-import { signOut } from "@/lib/actions/server/auth-actions";
+import { signOut } from "@/lib/actions/server/auth/auth-actions";
 import { ThemeSwitcher } from "../theme/theme-switcher";
 
 function getNavigation(username?: string) {

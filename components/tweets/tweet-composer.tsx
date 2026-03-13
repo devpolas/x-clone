@@ -8,7 +8,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { ImageIcon, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { createTweet } from "@/lib/actions/tweet/tweets-actions";
+import { createTweet } from "@/lib/actions/server/tweet/tweets-actions";
 import { useRouter } from "next/navigation";
 import Loader from "../loader/loader";
 import { toast } from "sonner";

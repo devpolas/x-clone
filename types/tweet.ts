@@ -2,7 +2,9 @@ export interface TweetAuthor {
   id: string;
   name: string;
   username?: string | null;
+  bio?: string | null;
   avatar?: string | null;
+  createdAt: Date;
 }
 
 export interface TweetType {

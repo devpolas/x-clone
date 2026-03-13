@@ -1,8 +1,8 @@
 import Tweet from "@/components/tweets/tweet";
 import TweetComposer from "@/components/tweets/tweet-composer";
 import MainLayout from "@/layouts/main-layout";
-import { getSession } from "@/lib/actions/server/auth-actions";
-import { getTweets } from "@/lib/actions/tweet/tweets-actions";
+import { getSession } from "@/lib/actions/server/auth/auth-actions";
+import { getTweets } from "@/lib/actions/server/tweet/tweets-actions";
 
 export default async function page() {
   const session = await getSession();

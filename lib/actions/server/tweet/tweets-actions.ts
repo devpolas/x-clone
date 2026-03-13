@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma/prisma";
-import { getSession } from "../server/auth-actions";
+import { getSession } from "../auth/auth-actions";
 import { redirect } from "next/navigation";
 
 export async function createTweet(content: string, imageUrl?: string) {

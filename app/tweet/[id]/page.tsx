@@ -1,9 +1,9 @@
 import TweetDetails from "@/components/tweets/tweet-details";
-import { getSession } from "@/lib/actions/server/auth-actions";
+import { getSession } from "@/lib/actions/server/auth/auth-actions";
 import {
   getTweetById,
   getTweetRepliesById,
-} from "@/lib/actions/tweet/tweets-actions";
+} from "@/lib/actions/server/tweet/tweets-actions";
 import { redirect } from "next/navigation";
 
 export default async function TweetPage({

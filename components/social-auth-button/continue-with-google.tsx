@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "../ui/button";
-import { signinWithGoogle } from "@/lib/actions/server/auth-actions";
+import { signinWithGoogle } from "@/lib/actions/server/auth/auth-actions";
 import { useState } from "react";
 import Loader from "../loader/loader";
 import G_ICON from "@/assets/google.svg";

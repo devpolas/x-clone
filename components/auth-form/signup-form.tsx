@@ -5,7 +5,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
-import { signupWithEmail } from "@/lib/actions/server/auth-actions";
+import { signupWithEmail } from "@/lib/actions/server/auth/auth-actions";
 import Loader from "../loader/loader";
 import { useRouter } from "next/navigation";
 
