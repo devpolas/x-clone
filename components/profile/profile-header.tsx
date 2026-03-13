@@ -1,3 +1,4 @@
+"use client";
 import { CldImage } from "next-cloudinary";
 import { TweetAuthor } from "../../types/tweet";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -6,11 +7,13 @@ import { Button } from "../ui/button";
 import { Calendar, Edit } from "lucide-react";
 
 import { formatDate } from "@/utils/formate-date";
+import { useState } from "react";
+import ProfileModel from "./profile-model";
 
 interface UserInterface extends TweetAuthor {
   postedTweet: number;
   repliedTweet: number;
-  image?: string;
+  image: string | null;
   _count: {
     tweets: number;
     likes: number;
@@ -26,6 +29,7 @@ export default function ProfileHeader({
   user,
   currentUser,
 }: ProfileHeaderProps) {
+  const [isEditingOpen, setIsEditingOpen] = useState<boolean>(false);
   const isOwnProfile = user.id === currentUser.id;
 
   return (
@@ -45,34 +49,39 @@ export default function ProfileHeader({
       </div>
 
       <div className='px-4 pb-4'>
-        <div className='flex justify-between items-start -mt-16 mb-4'>
-          <Avatar className='shadow-xs hover:shadow-sm backdrop-blur-md rounded-full w-14 h-14 hover:scale-105 transition-all duration-200 hover:cursor-pointer'>
-            <AvatarImage
-              src={user.avatar ?? undefined}
-              className='object-cover'
-            />
+        <div className='flex justify-between items-start'>
+          <div className='-mt-16 mb-4'>
+            <Avatar className='shadow-xs hover:shadow-sm backdrop-blur-md rounded-full w-30 h-30 hover:scale-105 transition-all duration-200 hover:cursor-pointer'>
+              <AvatarImage
+                src={user.avatar ?? undefined}
+                className='object-cover'
+              />
 
-            <AvatarFallback className='bg-white/10 backdrop-blur-xl border font-semibold text-primary text-lg uppercase'>
-              {getInitials(user.name)}
-            </AvatarFallback>
-          </Avatar>
+              <AvatarFallback className='bg-white/10 backdrop-blur-xl border font-semibold text-primary text-4xl uppercase'>
+                {getInitials(user.name)}
+              </AvatarFallback>
+            </Avatar>
+          </div>
 
-          {isOwnProfile ? (
-            <Button
-              variant='outline'
-              className='group z-10 flex items-center mt-4 font-medium text-primary'
-            >
-              <Edit className='mr-2 w-4 h-4 group-hover:scale-105 transition-all group-hover:translate-x-0.5 duration-300 ease-out' />
-              Edit Profile
-            </Button>
-          ) : (
-            <Button
-              variant={"outline"}
-              className='z-10 mt-4 font-medium text-primary'
-            >
-              Follow
-            </Button>
-          )}
+          <div>
+            {isOwnProfile ? (
+              <Button
+                variant='outline'
+                className='group z-10 flex items-center mt-4 font-medium text-primary'
+                onClick={() => setIsEditingOpen(true)}
+              >
+                <Edit className='mr-2 w-4 h-4 group-hover:scale-105 transition-all group-hover:translate-x-0.5 duration-300 ease-out' />
+                Edit Profile
+              </Button>
+            ) : (
+              <Button
+                variant={"outline"}
+                className='z-10 mt-4 font-medium text-primary'
+              >
+                Follow
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className='space-y-3'>
@@ -107,6 +116,12 @@ export default function ProfileHeader({
           </div>
         </div>
       </div>
+
+      <ProfileModel
+        isOpen={isEditingOpen}
+        onClose={() => setIsEditingOpen(false)}
+        user={user}
+      />
     </div>
   );
 }

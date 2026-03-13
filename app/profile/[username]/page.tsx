@@ -22,14 +22,12 @@ export default async function ProfilePage({
 
   const user = profileInfo.user;
 
-  if (!user) return null;
-
   return (
     <MainLayout>
       <div className='top-0 z-10 sticky bg-background p-4 border-border border-b'>
         <h1 className='font-bold text-xl'>Profile</h1>
       </div>
-      {!profileInfo.success ? (
+      {!profileInfo.success || !user ? (
         <ProfileNotFound />
       ) : (
         <>
