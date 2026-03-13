@@ -15,8 +15,19 @@ export interface TweetType {
   createdAt: Date;
   updatedAt: Date;
 
-  author: TweetAuthor;
-  likes: Array<{ id: string; userId: string }>;
+  author: {
+    id: string;
+    name: string;
+    username?: string | null;
+    bio?: string | null;
+    avatar?: string | null;
+  };
+  likes: Array<{
+    id: string;
+    createdAt: Date;
+    userId: string;
+    tweetId: string;
+  }>;
 
   children?: TweetType[];
 }
