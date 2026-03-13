@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { formatDate } from "@/utils/formate-date";
 import { useRouter } from "next/navigation";
+import Loader from "../loader/loader";
 
 const IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
 interface TweeterAuthorModal extends TweetAuthor {
@@ -109,6 +110,7 @@ export default function ProfileModel({
           description: formatDate(new Date()),
         });
         router.push(`/profile/${result.user?.username}`);
+        router.refresh();
         onClose();
       } else {
         toast.error(result.error || "Failed to update profile!", {
@@ -242,10 +244,23 @@ export default function ProfileModel({
           </div>
 
           <div className='flex justify-end space-x-3 pt-4'>
-            <Button type='button' variant={"destructive"} onClick={onClose}>
+            <Button
+              disabled={isSubmitting}
+              type='button'
+              variant={"destructive"}
+              onClick={onClose}
+            >
               Cancel
             </Button>
-            <Button type='submit'>Save Changes</Button>
+            <Button disabled={isSubmitting} type='submit'>
+              {isSubmitting ? (
+                <span className='flex flex-row gap-2'>
+                  <Loader /> Saving.....{" "}
+                </span>
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>
