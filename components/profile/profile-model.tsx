@@ -10,7 +10,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { getInitials } from "@/utils/get-initials";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
+import {
+  updateUserProfile,
+  uploadImageToCloudinary,
+} from "@/lib/actions/server/user/user-actions";
+import { toast } from "sonner";
+import { formatDate } from "@/utils/formate-date";
+import { useRouter } from "next/navigation";
 
+const IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
 interface TweeterAuthorModal extends TweetAuthor {
   image: string | null;
 }
@@ -26,6 +34,8 @@ export default function ProfileModel({
   onClose,
   isOpen,
 }: ProfileModelProps) {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isBanner, setIsBanner] = useState<string | null>(user.image || null);
   const [isAvatar, setIsAvatar] = useState<string | null>(user.avatar || null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -44,6 +54,78 @@ export default function ProfileModel({
     setFormDate((pre) => ({ ...pre, [name]: value }));
   };
 
+  async function handleUploadImage(file: File, type: "avatar" | "banner") {
+    try {
+      const imageUrl = await uploadImageToCloudinary(file);
+      if (type === "avatar") {
+        setIsAvatar(imageUrl);
+      } else {
+        setIsBanner(imageUrl);
+      }
+    } catch (error) {
+      toast.error("Failed to upload image!", {
+        position: "top-center",
+        description: formatDate(new Date()),
+      });
+    }
+  }
+
+  function handleFileChange(
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "avatar" | "banner",
+  ) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // validate image
+    if (!file.type.startsWith("image/")) {
+      toast.warning("Please select an image");
+      return;
+    }
+    // validate image size
+    if (file.size > IMAGE_SIZE) {
+      toast.warning("Image size less than 5 MB");
+      return;
+    }
+    handleUploadImage(file, type);
+  }
+
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const result = await updateUserProfile({
+        ...formData,
+        avatar: isAvatar || undefined,
+        banner: isBanner || undefined,
+      });
+      if (!result.success && !result.auth) {
+        router.push(`/signin?callbackURL=/profile${user.username}`);
+      }
+      if (result.success) {
+        toast.success("update profile successfully", {
+          position: "top-center",
+          description: formatDate(new Date()),
+        });
+        router.refresh();
+        onClose();
+      } else {
+        toast.error(result.error || "Failed to update profile!", {
+          position: "top-center",
+          description: formatDate(new Date()),
+        });
+      }
+    } catch (error) {
+      toast.error("Failed to upload image!", {
+        position: "top-center",
+        description: formatDate(new Date()),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className='max-w-2xl max-h-[90vh] overflow-y-auto'>
@@ -51,7 +133,7 @@ export default function ProfileModel({
           <DialogTitle>Edit Profile</DialogTitle>
         </DialogHeader>
 
-        <form className='space-y-6'>
+        <form className='space-y-6' onSubmit={handleSubmit}>
           <div className='relative'>
             <div className='relative bg-linear-to-br from-pink-700 via-blue-700 to-purple-700 rounded-lg h-32 overflow-hidden'>
               {isBanner && (
@@ -64,7 +146,7 @@ export default function ProfileModel({
               )}
             </div>
             <Input
-              onChange={() => {}}
+              onChange={(e) => handleFileChange(e, "banner")}
               type='file'
               hidden
               accept='image/*'
@@ -95,7 +177,7 @@ export default function ProfileModel({
               </Avatar>
 
               <Input
-                onChange={() => {}}
+                onChange={(e) => handleFileChange(e, "avatar")}
                 type='file'
                 hidden
                 accept='image/*'
