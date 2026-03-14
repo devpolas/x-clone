@@ -4,6 +4,10 @@ import prisma from "@/lib/prisma/prisma";
 import { getSession } from "../auth/auth-actions";
 
 export async function getUserProfile(username: string) {
+  const session = await getSession();
+  if (!session?.user) {
+    return { success: false, auth: false, error: "signin first" };
+  }
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -14,6 +18,8 @@ export async function getUserProfile(username: string) {
           select: {
             tweets: true,
             likes: true,
+            follower: true,
+            following: true,
           },
         },
       },
@@ -83,7 +89,7 @@ export async function updateUserProfile(data: {
 }) {
   const session = await getSession();
   if (!session?.user) {
-    return { success: false, auth: false };
+    return { success: false, auth: false, error: "signin first" };
   }
   try {
     if (data.username !== session.user.username) {
@@ -222,5 +228,77 @@ export async function getUserLikes(username: string) {
   } catch (error) {
     console.error("error fetching user tweets liked", error);
     return { success: false, error: "failed to fetch user tweets liked" };
+  }
+}
+
+export async function followUser(id: string) {
+  const session = await getSession();
+  if (!session) {
+    return { success: false, auth: false, error: "signin first" };
+  }
+
+  if (session.user.id === id) {
+    return { success: false, error: "you can't follow yourself" };
+  }
+
+  try {
+    const exitingFollow = await prisma.follow.findUnique({
+      where: {
+        followingId_followerId: {
+          followerId: session.user.id,
+          followingId: id,
+        },
+      },
+    });
+    if (exitingFollow) {
+      await prisma.follow.delete({
+        where: { id: exitingFollow.id },
+      });
+
+      return { success: true, action: "unfollow" };
+    } else {
+      await prisma.follow.create({
+        data: {
+          followerId: session.user.id,
+          followingId: id,
+        },
+      });
+
+      return { success: true, action: "followed" };
+    }
+  } catch (error) {
+    console.error("error follow user", error);
+    return { success: false, error: "failed to follow" };
+  }
+}
+
+export async function checkFollowStatus(targetUserId: string) {
+  const session = await getSession();
+  if (!session?.user) {
+    return {
+      success: false,
+      auth: false,
+      error: "signin first",
+      isFollowing: false,
+    };
+  }
+
+  try {
+    const followStatus = await prisma.follow.findUnique({
+      where: {
+        followingId_followerId: {
+          followerId: session.user.id,
+          followingId: targetUserId,
+        },
+      },
+    });
+    return { success: true, isFollowing: !!followStatus };
+  } catch (error) {
+    console.error("failed to check following check", error);
+    return {
+      success: false,
+      error: "failed to following check",
+      isFollowing: false,
+    };
   }
 }

@@ -9,6 +9,10 @@ import { Calendar, Edit } from "lucide-react";
 import { formatDate } from "@/utils/formate-date";
 import { useState } from "react";
 import ProfileModel from "./profile-model";
+import { toast } from "sonner";
+import { followUser } from "@/lib/actions/server/user/user-actions";
+import { useRouter } from "next/navigation";
+import Loader from "../loader/loader";
 
 interface UserInterface extends TweetAuthor {
   postedTweet: number;
@@ -17,20 +21,48 @@ interface UserInterface extends TweetAuthor {
   _count: {
     tweets: number;
     likes: number;
+    follower: number;
+    following: number;
   };
 }
 
 interface ProfileHeaderProps {
   user: UserInterface;
   currentUser: TweetAuthor;
+  isFollowing: boolean;
 }
 
 export default function ProfileHeader({
   user,
   currentUser,
+  isFollowing,
 }: ProfileHeaderProps) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isFollowingStatus, setIsFollowingStatus] =
+    useState<boolean>(isFollowing);
   const [isEditingOpen, setIsEditingOpen] = useState<boolean>(false);
   const isOwnProfile = user.id === currentUser.id;
+
+  async function handleFollow() {
+    try {
+      setIsLoading(true);
+
+      const result = await followUser(user.id);
+
+      if (result.success) {
+        setIsFollowingStatus(result.action === "followed");
+        router.refresh();
+      }
+    } catch (error) {
+      toast.error("error following account", {
+        position: "top-center",
+        description: formatDate(new Date()),
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <div className='border-border border-b'>
@@ -75,10 +107,20 @@ export default function ProfileHeader({
               </Button>
             ) : (
               <Button
-                variant={"outline"}
+                disabled={isLoading}
+                variant={isFollowingStatus ? "outline" : "secondary"}
                 className='z-10 mt-4 font-medium text-primary'
+                onClick={handleFollow}
               >
-                Follow
+                {isLoading ? (
+                  <span className='flex justify-center items-center gap-2'>
+                    <Loader />
+                  </span>
+                ) : isFollowingStatus ? (
+                  "Unfollow"
+                ) : (
+                  "Follow"
+                )}
               </Button>
             )}
           </div>
@@ -100,11 +142,15 @@ export default function ProfileHeader({
 
           <div className='flex items-center space-x-6 text-sm'>
             <div className='flex items-center space-x-1'>
-              <span className='font-semibold text-foreground'>4</span>
+              <span className='font-semibold text-foreground'>
+                {user._count.following ?? 0}
+              </span>
               <span className='text-muted-foreground'>Following</span>
             </div>
             <div className='flex items-center space-x-1'>
-              <span className='font-semibold text-foreground'>2</span>
+              <span className='font-semibold text-foreground'>
+                {user._count.follower ?? 0}
+              </span>
               <span className='text-muted-foreground'>Followers</span>
             </div>
             <div className='flex items-center space-x-1'>

@@ -4,6 +4,7 @@ import ProfileNotFound from "@/components/profile/profile-not-found";
 import MainLayout from "@/layouts/main-layout";
 import { getSession } from "@/lib/actions/server/auth/auth-actions";
 import {
+  checkFollowStatus,
   getUserProfile,
   getUserTweets,
 } from "@/lib/actions/server/user/user-actions";
@@ -22,7 +23,14 @@ export default async function ProfilePage({
   }
 
   const [profileInfo, tweetsResult] = await Promise.all([
-    getUserProfile(username),
+    getUserProfile(username).then(async (result) => {
+      if (result.success && result.user) {
+        const followStatus = await checkFollowStatus(result.user.id);
+        return { ...result, isFollowing: followStatus.isFollowing };
+      }
+
+      return { success: false, isFollowing: false, user: null };
+    }),
     getUserTweets(username),
   ]);
 
@@ -38,7 +46,11 @@ export default async function ProfilePage({
         <ProfileNotFound />
       ) : (
         <>
-          <ProfileHeader user={user} currentUser={session.user} />
+          <ProfileHeader
+            user={user}
+            currentUser={session.user}
+            isFollowing={profileInfo.isFollowing}
+          />
           <ProfileContent
             username={username}
             initialsTweets={tweets}
