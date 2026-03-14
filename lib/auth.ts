@@ -3,6 +3,7 @@ import { nextCookies } from "better-auth/next-js";
 import prisma from "./prisma/prisma";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import "dotenv/config";
+import { generateUniqueUsername } from "./actions/server/auth/generate-default-username";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -22,6 +23,7 @@ export const auth = betterAuth({
       prompt: "select_account consent",
     },
   },
+
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
   },
@@ -36,6 +38,23 @@ export const auth = betterAuth({
       },
       avatar: {
         type: "string",
+      },
+    },
+  },
+
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          return {
+            data: {
+              ...user,
+              username: user.username ?? generateUniqueUsername(user.name),
+              bio: user.bio ?? "",
+              avatar: user.avatar ?? user.image ?? "",
+            },
+          };
+        },
       },
     },
   },
