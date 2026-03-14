@@ -28,6 +28,8 @@ model User {
   accounts      Account[]
   tweets        Tweet[]
   likes         Like[]
+  following     Follow[] @relation("UserFollowing")
+  follower      Follow[] @relation("UserFollower")
 
   @@unique([email])
   @@map("user")
@@ -115,4 +117,18 @@ model Like{
 
   @@unique([userId, tweetId])
   @@map("likes")
+}
+
+
+model Follow{
+  id String @id @default(uuid())
+  followingId String @map("followingId")
+  followerId String @map("followerId")
+
+  following User @relation("UserFollowing", fields: [followingId],references: [id], onDelete: Cascade)
+  follower User @relation("UserFollower",fields: [followerId], references: [id], onDelete: Cascade)
+
+  @@unique([followingId, followerId])
+  @@map("follows")
+
 }
