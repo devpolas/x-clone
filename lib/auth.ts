@@ -3,7 +3,14 @@ import { nextCookies } from "better-auth/next-js";
 import prisma from "./prisma/prisma";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import "dotenv/config";
-import { generateUniqueUsername } from "./actions/server/auth/generate-default-username";
+
+type CreateUserData = {
+  name: string;
+  username?: string;
+  bio?: string;
+  avatar?: string;
+  image?: string;
+};
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -32,12 +39,16 @@ export const auth = betterAuth({
     additionalFields: {
       username: {
         type: "string",
+        required: false,
+        input: true,
       },
       bio: {
         type: "string",
+        required: false,
       },
       avatar: {
         type: "string",
+        required: false,
       },
     },
   },
@@ -45,11 +56,32 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        before: async (user) => {
+        before: async (ctx) => {
+          const data = ctx?.data ?? {};
+
+          const user = data as {
+            name?: string;
+            username?: string;
+            bio?: string;
+            avatar?: string;
+            image?: string;
+          };
+
+          const base = (user.name ?? "user")
+            .toLowerCase()
+            .replace(/\s+/g, "")
+            .replace(/[^a-z0-9]/g, "")
+            .slice(0, 20);
+
+          const username =
+            typeof user.username === "string" && user.username.length > 0
+              ? user.username
+              : `${base}${Math.floor(Math.random() * 9000 + 1000)}`;
+
           return {
             data: {
               ...user,
-              username: user.username ?? generateUniqueUsername(user.name),
+              username,
               bio: user.bio ?? "",
               avatar: user.avatar ?? user.image ?? "",
             },
