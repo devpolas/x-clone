@@ -115,3 +115,112 @@ export async function updateUserProfile(data: {
     return { success: false, error: "failed to update profile" };
   }
 }
+
+export async function getUserTweets(username: string) {
+  try {
+    const tweets = await prisma.tweet.findMany({
+      where: {
+        parentId: null,
+        author: {
+          username,
+        },
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            avatar: true,
+          },
+        },
+        likes: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return { success: true, tweets };
+  } catch (error) {
+    console.error("error fetching tweets", error);
+    return { success: false, error: "failed to fetch tweets" };
+  }
+}
+
+export async function getUserReplies(username: string) {
+  try {
+    const tweetsReplies = await prisma.tweet.findMany({
+      where: {
+        parentId: { not: null },
+        author: {
+          username,
+        },
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            avatar: true,
+          },
+        },
+        likes: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return { success: true, tweetsReplies };
+  } catch (error) {
+    console.error("error fetching tweets replies", error);
+    return { success: false, error: "failed to fetch tweets replies" };
+  }
+}
+
+export async function getUserLikes(username: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        username,
+      },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return { success: false, error: "user not found" };
+    }
+
+    const userLiedTweets = await prisma.like.findMany({
+      where: {
+        userId: user.id,
+      },
+
+      include: {
+        tweet: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                username: true,
+                avatar: true,
+              },
+            },
+            likes: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return { success: true, tweet: userLiedTweets.map((like) => like.tweet) };
+  } catch (error) {
+    console.error("error fetching user tweets liked", error);
+    return { success: false, error: "failed to fetch user tweets liked" };
+  }
+}

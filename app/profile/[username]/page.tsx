@@ -3,7 +3,10 @@ import ProfileHeader from "@/components/profile/profile-header";
 import ProfileNotFound from "@/components/profile/profile-not-found";
 import MainLayout from "@/layouts/main-layout";
 import { getSession } from "@/lib/actions/server/auth/auth-actions";
-import { getUserProfile } from "@/lib/actions/server/user/user-actions";
+import {
+  getUserProfile,
+  getUserTweets,
+} from "@/lib/actions/server/user/user-actions";
 import { redirect } from "next/navigation";
 
 export default async function ProfilePage({
@@ -18,9 +21,13 @@ export default async function ProfilePage({
     redirect(`/signin?callbackURL=/profile/${username}`);
   }
 
-  const [profileInfo] = await Promise.all([getUserProfile(username)]);
+  const [profileInfo, tweetsResult] = await Promise.all([
+    getUserProfile(username),
+    getUserTweets(username),
+  ]);
 
   const user = profileInfo.user;
+  const tweets = tweetsResult.success ? tweetsResult.tweets || [] : [];
 
   return (
     <MainLayout>
@@ -32,7 +39,14 @@ export default async function ProfilePage({
       ) : (
         <>
           <ProfileHeader user={user} currentUser={session.user} />
-          <ProfileContent />
+          <ProfileContent
+            username={username}
+            initialsTweets={tweets}
+            tweetCount={user._count.tweets}
+            replyCount={user.repliedTweet}
+            likeCount={user._count.likes}
+            currentUserId={user.id}
+          />
         </>
       )}
     </MainLayout>
