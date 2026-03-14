@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma/prisma";
 import { getSession } from "../auth/auth-actions";
+import { createNotification } from "../notification/notification";
 
 export async function getUserProfile(username: string) {
   const session = await getSession();
@@ -263,6 +264,8 @@ export async function followUser(id: string) {
           followingId: id,
         },
       });
+
+      await createNotification("FOLLOW", id, session.user.id);
 
       return { success: true, action: "followed" };
     }

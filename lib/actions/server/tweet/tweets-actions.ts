@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma/prisma";
 import { getSession } from "../auth/auth-actions";
-import { redirect } from "next/navigation";
+import { createNotification } from "../notification/notification";
 
 export async function createTweet(content: string, imageUrl?: string) {
   const session = await getSession();
@@ -47,6 +47,22 @@ export async function createTweetReply(
         parentId: tweetId,
       },
     });
+
+    const tweet = await prisma.tweet.findUnique({
+      where: { id: tweetId },
+      select: {
+        authorId: true,
+      },
+    });
+
+    if (tweet) {
+      await createNotification(
+        "REPLY",
+        tweet.authorId,
+        session.user.id,
+        tweetId,
+      );
+    }
 
     return { success: true, tweetReply };
   } catch (error) {
@@ -178,6 +194,26 @@ export async function likeTweet(tweetId: string) {
           tweetId,
         },
       });
+
+      // create notification
+      const tweet = await prisma.tweet.findUnique({
+        where: {
+          id: tweetId,
+        },
+        select: {
+          authorId: true,
+        },
+      });
+
+      if (tweet) {
+        await createNotification(
+          "LIKE",
+          tweet.authorId,
+          session.user.id,
+          tweetId,
+        );
+      }
+
       return { success: true, action: "liked" };
     }
   } catch (error) {
