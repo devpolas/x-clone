@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma/prisma";
 import { getSession } from "../auth/auth-actions";
-import { createNotification } from "../notification/notification";
+import { createNotification } from "../notification/notification-actions";
 
 export async function getUserProfile(username: string) {
   const session = await getSession();
