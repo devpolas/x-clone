@@ -219,6 +219,6 @@ export async function likeTweet(tweetId: string) {
     }
   } catch (error) {
     console.error("failed to like and unLiked", error);
-    return { success: false, error: "failed to liked" };
+    return { success: false, error: "failed to liked", auth: false };
   }
 }

@@ -54,7 +54,7 @@ export default async function ProfilePage({
           <ProfileContent
             username={username}
             initialsTweets={tweets}
-            tweetCount={user._count.tweets}
+            tweetCount={user.postedTweet}
             replyCount={user.repliedTweet}
             likeCount={user._count.likes}
             currentUserId={user.id}
