@@ -1,36 +1,293 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# X Clone
 
-## Getting Started
+A modern **X (Twitter) clone** built with the latest **Next.js 16, React 19, Prisma, and Better Auth**.
+This project demonstrates a scalable architecture for building a **real-time social media platform** with modern full-stack technologies.
 
-First, run the development server:
+---
+
+## 🚀 Features
+
+- 🔐 Authentication with **Better Auth**
+- 👤 User profiles
+- 🐦 Tweet posting
+- 💬 Nested tweet replies (tree structure)
+- ❤️ Like system
+- 🖼 Image uploads via **Cloudinary**
+- 🌙 Dark / Light mode support
+- ⚡ Server components & modern Next.js architecture
+- 📱 Responsive UI with **TailwindCSS + Radix UI**
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+
+- **React 19**
+- **Next.js 16 (App Router)**
+- **TailwindCSS v4**
+- **Radix UI**
+- **Shadcn UI**
+- **Lucide Icons**
+
+### Backend
+
+- **Next.js Server Actions**
+- **Better Auth**
+- **Prisma ORM**
+- **PostgreSQL**
+
+### File Upload
+
+- **Cloudinary**
+- **next-cloudinary**
+
+### Forms & Validation
+
+- **React Hook Form**
+
+### Utilities
+
+- **clsx**
+- **tailwind-merge**
+- **class-variance-authority**
+
+---
+
+## 📂 Project Structure
+
+Example structure:
+
+```ts
+x_clone
+│
+├── app
+│   ├── api
+│   ├── (auth)
+│   ├── (main)
+│   └── layout.tsx
+│
+├── components
+│   ├── ui
+│   ├── tweet
+│   └── layout
+│
+├── lib
+│   ├── auth
+│   ├── prisma
+│   └── utils
+│
+├── prisma
+│   └── schema.prisma
+│
+├── public
+│
+├── types
+│
+└── README.md
+```
+
+---
+
+## ⚙️ Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/your-username/x_clone.git
+```
+
+Move into the project directory:
+
+```bash
+cd x_clone
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+---
+
+## 🔑 Environment Variables
+
+Create a `.env` file in the root directory.
+
+Example:
+
+```ts
+DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/x_clone"
+
+BETTER_AUTH_SECRET=your_secret
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+```
+
+---
+
+## 🗄 Database Setup
+
+Run Prisma migrations:
+
+```bash
+npx prisma migrate dev
+```
+
+Generate Prisma client:
+
+```bash
+npx prisma generate
+```
+
+---
+
+## 🧑‍💻 Development
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```ts
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📜 Available Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Script          | Description              |
+| --------------- | ------------------------ |
+| `npm run dev`   | Start development server |
+| `npm run build` | Build production app     |
+| `npm run start` | Start production server  |
+| `npm run lint`  | Run ESLint               |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧠 Key Concepts Implemented
 
-## Deploy on Vercel
+## Nested Reply System
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Replies are stored in a **flat database structure** and converted to a **tree structure** using a custom algorithm.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Example:
+
+```ts
+Tweet
+ ├─ Reply 1
+ │   ├─ Reply 1.1
+ │   └─ Reply 1.2
+ └─ Reply 2
+```
+
+---
+
+## 🎨 UI System
+
+This project uses:
+
+- **Shadcn UI**
+- **Radix UI primitives**
+- **TailwindCSS**
+- **Custom reusable components**
+
+---
+
+## 📸 Media Upload
+
+Images are uploaded using **Cloudinary** via:
+
+```ts
+next - cloudinary;
+```
+
+This enables:
+
+- automatic optimization
+- CDN delivery
+- responsive images
+
+---
+
+## 🌙 Theme Support
+
+Implemented with:
+
+```ts
+next - themes;
+```
+
+Features:
+
+- Light mode
+- Dark mode
+- System preference detection
+
+---
+
+## 🔒 Authentication
+
+Authentication is handled by:
+
+```ts
+better - auth;
+```
+
+With:
+
+- OAuth providers
+- Session management
+- Secure cookie handling
+- Prisma adapter
+
+---
+
+## 📈 Future Improvements
+
+- Notifications system
+- Infinite scrolling
+- Follow system
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the repository
+2. Create your feature branch
+
+```bash
+git checkout -b feature/my-feature
+```
+
+3. Commit your changes
+
+```bash
+git commit -m "Add new feature"
+```
+
+4. Push to the branch
+
+```bash
+git push origin feature/my-feature
+```
+
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
