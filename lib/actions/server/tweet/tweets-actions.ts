@@ -3,12 +3,13 @@
 import prisma from "@/lib/prisma/prisma";
 import { getSession } from "../auth/auth-actions";
 import { createNotification } from "../notification/notification-actions";
+import { redirect } from "next/navigation";
 
 export async function createTweet(content: string, imageUrl?: string) {
   const session = await getSession();
 
   if (!session?.user) {
-    return { success: false, auth: false };
+    redirect("/signin");
   }
 
   try {
@@ -35,7 +36,7 @@ export async function createTweetReply(
   const session = await getSession();
 
   if (!session?.user) {
-    return { success: false, auth: false };
+    redirect("/signin");
   }
 
   try {
@@ -167,7 +168,7 @@ export async function getTweets() {
 export async function likeTweet(tweetId: string) {
   const session = await getSession();
   if (!session?.user) {
-    return { success: false, auth: false };
+    redirect("/signin");
   }
 
   try {

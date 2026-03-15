@@ -3,11 +3,12 @@
 import prisma from "@/lib/prisma/prisma";
 import { getSession } from "../auth/auth-actions";
 import { createNotification } from "../notification/notification-actions";
+import { redirect } from "next/navigation";
 
 export async function getUserProfile(username: string) {
   const session = await getSession();
   if (!session?.user) {
-    return { success: false, auth: false, error: "signin first" };
+    redirect("/signin");
   }
   try {
     const user = await prisma.user.findUnique({
@@ -90,7 +91,7 @@ export async function updateUserProfile(data: {
 }) {
   const session = await getSession();
   if (!session?.user) {
-    return { success: false, auth: false, error: "signin first" };
+    redirect("/signin");
   }
   try {
     if (data.username !== session.user.username) {
@@ -234,8 +235,8 @@ export async function getUserLikes(username: string) {
 
 export async function followUser(id: string) {
   const session = await getSession();
-  if (!session) {
-    return { success: false, auth: false, error: "signin first" };
+  if (!session?.user) {
+    redirect("/signin");
   }
 
   if (session.user.id === id) {
@@ -277,6 +278,10 @@ export async function followUser(id: string) {
 
 export async function checkFollowStatus(targetUserId: string) {
   const session = await getSession();
+  if (!session?.user) {
+    redirect("/signin");
+  }
+
   if (!session?.user) {
     return {
       success: false,

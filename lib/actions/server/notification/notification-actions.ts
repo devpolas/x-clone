@@ -3,6 +3,7 @@
 import { NotificationType } from "@/app/generated/prisma/enums";
 import prisma from "@/lib/prisma/prisma";
 import { getSession } from "../auth/auth-actions";
+import { redirect } from "next/navigation";
 
 export async function createNotification(
   type: NotificationType,
@@ -46,6 +47,10 @@ export async function createNotification(
 
 export async function getUnreadNotificationCount() {
   const session = await getSession();
+
+  if (!session?.user) {
+    redirect("/signin");
+  }
 
   if (!session?.user) {
     return { success: true, count: 0 };
@@ -98,7 +103,7 @@ export async function getNotifications() {
   const session = await getSession();
 
   if (!session?.user) {
-    return { success: false, auth: false };
+    redirect("/signin");
   }
 
   try {
