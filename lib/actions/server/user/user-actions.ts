@@ -120,7 +120,7 @@ export async function updateUserProfile(data: {
     return { success: true, user: updatedUser };
   } catch (error) {
     console.error("Profile update error", error);
-    return { success: false, error: "failed to update profile" };
+    return { success: false, error: "failed to update profile", auth: false };
   }
 }
 
