@@ -4,22 +4,21 @@ import prisma from "@/lib/prisma/prisma";
 import { getSession } from "../auth/auth-actions";
 import { createNotification } from "../notification/notification-actions";
 import { redirect } from "next/navigation";
+import { revalidateTag, unstable_cache } from "next/cache";
 
+/**
+ * Create a new tweet
+ */
 export async function createTweet(content: string, imageUrl?: string) {
   const session = await getSession();
-
-  if (!session?.user) {
-    redirect("/signin");
-  }
+  if (!session?.user) redirect("/signin");
 
   try {
     const tweet = await prisma.tweet.create({
-      data: {
-        content,
-        imageUrl,
-        authorId: session.user.id,
-      },
+      data: { content, imageUrl, authorId: session.user.id },
     });
+
+    revalidateTag("timeline-tweets", "max");
 
     return { success: true, tweet };
   } catch (error) {
@@ -28,32 +27,25 @@ export async function createTweet(content: string, imageUrl?: string) {
   }
 }
 
+/**
+ * Reply to a tweet
+ */
 export async function createTweetReply(
   tweetId: string,
   content: string,
   imageUrl?: string,
 ) {
   const session = await getSession();
-
-  if (!session?.user) {
-    redirect("/signin");
-  }
+  if (!session?.user) redirect("/signin");
 
   try {
     const tweetReply = await prisma.tweet.create({
-      data: {
-        content,
-        imageUrl,
-        authorId: session.user.id,
-        parentId: tweetId,
-      },
+      data: { content, imageUrl, authorId: session.user.id, parentId: tweetId },
     });
 
     const tweet = await prisma.tweet.findUnique({
       where: { id: tweetId },
-      select: {
-        authorId: true,
-      },
+      select: { authorId: true },
     });
 
     if (tweet) {
@@ -65,160 +57,122 @@ export async function createTweetReply(
       );
     }
 
+    revalidateTag("tweet", "max");
+    revalidateTag("tweet-replies", "max");
+
     return { success: true, tweetReply };
   } catch (error) {
-    console.error("error creating tweet", error);
+    console.error("error creating tweet reply", error);
     return { success: false, error: "failed to create tweet reply" };
   }
 }
 
-export async function getTweetById(id: string) {
-  try {
+/**
+ * Fetch a tweet by ID (cached)
+ */
+export const getTweetById = unstable_cache(
+  async (id: string) => {
     const tweet = await prisma.tweet.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
       include: {
         author: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            avatar: true,
-          },
+          select: { id: true, name: true, username: true, avatar: true },
         },
         likes: true,
       },
     });
 
-    if (!tweet) {
-      return { success: false, error: "tweet was not found" };
-    }
-
+    if (!tweet) return { success: false, error: "tweet was not found" };
     return { success: true, tweet };
-  } catch (error) {
-    console.error("error fetching tweet", error);
-    return { success: false, error: "failed to fetch tweet" };
-  }
-}
+  },
+  ["tweet-by-id"],
+  { revalidate: 120, tags: ["tweet"] },
+);
 
-export async function getTweetRepliesById(id: string) {
-  try {
+/**
+ * Fetch replies to a tweet (cached)
+ */
+export const getTweetRepliesById = unstable_cache(
+  async (id: string) => {
     const replies = await prisma.tweet.findMany({
       where: {
-        OR: [
-          { parentId: id },
-          {
-            parent: {
-              parentId: id,
-            },
-          },
-        ],
+        OR: [{ parentId: id }, { parent: { parentId: id } }],
       },
       include: {
         author: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            avatar: true,
-          },
+          select: { id: true, name: true, username: true, avatar: true },
         },
         likes: true,
       },
-      orderBy: {
-        createdAt: "asc",
-      },
+      orderBy: { createdAt: "asc" },
     });
 
     return { success: true, tweetReplies: replies };
-  } catch (error) {
-    console.error(error);
-    return { success: false, error: "Failed to fetch replies" };
-  }
-}
+  },
+  ["tweet-replies"],
+  { revalidate: 120, tags: ["tweet-replies"] },
+);
 
-export async function getTweets() {
-  try {
+/**
+ * Fetch timeline tweets (cached)
+ */
+export const getTweets = unstable_cache(
+  async () => {
     const tweets = await prisma.tweet.findMany({
       where: { parentId: null },
       include: {
         author: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            avatar: true,
-          },
+          select: { id: true, name: true, username: true, avatar: true },
         },
         likes: true,
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
 
     return { success: true, tweets };
-  } catch (error) {
-    console.error("error fetching tweets", error);
-    return { success: false, error: "failed to fetch tweets" };
-  }
-}
+  },
+  ["timeline-tweets"],
+  { revalidate: 60, tags: ["timeline-tweets"] },
+);
 
+/**
+ * Like or unlike a tweet
+ */
 export async function likeTweet(tweetId: string) {
   const session = await getSession();
-  if (!session?.user) {
-    redirect("/signin");
-  }
+  if (!session?.user) redirect("/signin");
 
   try {
-    const exitingLike = await prisma.like.findUnique({
-      where: {
-        userId_tweetId: {
-          userId: session.user.id,
-          tweetId,
-        },
-      },
+    const existingLike = await prisma.like.findUnique({
+      where: { userId_tweetId: { userId: session.user.id, tweetId } },
     });
 
-    if (exitingLike) {
-      await prisma.like.delete({
-        where: {
-          id: exitingLike.id,
-        },
-      });
+    if (existingLike) {
+      await prisma.like.delete({ where: { id: existingLike.id } });
+      revalidateTag("tweet", "max");
+      revalidateTag("timeline-tweets", "max");
       return { success: true, action: "unLiked" };
-    } else {
-      await prisma.like.create({
-        data: {
-          userId: session.user.id,
-          tweetId,
-        },
-      });
-
-      // create notification
-      const tweet = await prisma.tweet.findUnique({
-        where: {
-          id: tweetId,
-        },
-        select: {
-          authorId: true,
-        },
-      });
-
-      if (tweet) {
-        await createNotification(
-          "LIKE",
-          tweet.authorId,
-          session.user.id,
-          tweetId,
-        );
-      }
-
-      return { success: true, action: "liked" };
     }
+
+    await prisma.like.create({ data: { userId: session.user.id, tweetId } });
+
+    const tweet = await prisma.tweet.findUnique({
+      where: { id: tweetId },
+      select: { authorId: true },
+    });
+    if (tweet)
+      await createNotification(
+        "LIKE",
+        tweet.authorId,
+        session.user.id,
+        tweetId,
+      );
+
+    revalidateTag("tweet", "max");
+    revalidateTag("timeline-tweets", "max");
+    return { success: true, action: "liked" };
   } catch (error) {
-    console.error("failed to like and unLiked", error);
-    return { success: false, error: "failed to liked", auth: false };
+    console.error("failed to like/unlike tweet", error);
+    return { success: false, error: "failed to like tweet", auth: false };
   }
 }

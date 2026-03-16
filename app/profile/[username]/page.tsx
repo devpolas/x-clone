@@ -5,7 +5,7 @@ import MainLayout from "@/layouts/main-layout";
 import { getSession } from "@/lib/actions/server/auth/auth-actions";
 import {
   checkFollowStatus,
-  getUserProfile,
+  getCachedUserProfile,
   getUserTweets,
 } from "@/lib/actions/server/user/user-actions";
 import { redirect } from "next/navigation";
@@ -23,7 +23,7 @@ export default async function ProfilePage({
   }
 
   const [profileInfo, tweetsResult] = await Promise.all([
-    getUserProfile(username).then(async (result) => {
+    getCachedUserProfile(username).then(async (result) => {
       if (result.success && result.user) {
         const followStatus = await checkFollowStatus(result.user.id);
         return { ...result, isFollowing: followStatus.isFollowing };

@@ -5,12 +5,15 @@ import { Badge } from "../ui/badge";
 import { useEffect } from "react";
 import { getUnreadNotificationCount } from "@/lib/actions/server/notification/notification-actions";
 
-export function NotificationBadge() {
+export function NotificationBadge({ userId }: { userId?: string }) {
   const { unreadCount, updateUnreadCount } = useNotification();
 
   useEffect(() => {
     async function fetchUnreadCount() {
-      const result = await getUnreadNotificationCount();
+      if (!userId) {
+        return null;
+      }
+      const result = await getUnreadNotificationCount(userId);
       if (result.success) {
         updateUnreadCount(result.count || 0);
       }

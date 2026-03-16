@@ -24,6 +24,7 @@ export function formatTimeAgo(date: Date | string) {
 }
 
 export function formatDate(date: Date) {
+  const d = new Date(date);
   const result = new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "numeric",
@@ -31,7 +32,7 @@ export function formatDate(date: Date) {
     day: "numeric",
     month: "short",
     year: "numeric",
-  }).format(date);
+  }).format(d);
 
   return result;
 }

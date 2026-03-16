@@ -4,119 +4,104 @@ import prisma from "@/lib/prisma/prisma";
 import { getSession } from "../auth/auth-actions";
 import { createNotification } from "../notification/notification-actions";
 import { redirect } from "next/navigation";
+import { revalidateTag, unstable_cache } from "next/cache";
 
-export async function getUserProfile(username: string) {
-  const session = await getSession();
-  if (!session?.user) {
-    redirect("/signin");
-  }
-  try {
-    const user = await prisma.user.findUnique({
-      where: {
-        username,
-      },
-      include: {
-        _count: {
-          select: {
-            tweets: true,
-            likes: true,
-            follower: true,
-            following: true,
+/**
+ * Fetch user profile with cached results
+ */
+export const getCachedUserProfile = unstable_cache(
+  async (username: string) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { username },
+        include: {
+          _count: {
+            select: {
+              tweets: true,
+              likes: true,
+              follower: true,
+              following: true,
+            },
           },
         },
-      },
-    });
-    if (!user) {
-      return { success: false, error: "user not found" };
+      });
+      if (!user) return { success: false, error: "user not found" };
+
+      const [postedTweet, repliedTweet] = await Promise.all([
+        prisma.tweet.count({ where: { authorId: user.id, parentId: null } }),
+        prisma.tweet.count({
+          where: { authorId: user.id, parentId: { not: null } },
+        }),
+      ]);
+
+      return { success: true, user: { ...user, postedTweet, repliedTweet } };
+    } catch (error) {
+      console.error("profile fetching error", error);
+      return { success: false, error: "failed to fetch user profile" };
     }
+  },
+  ["user-profile"],
+  { revalidate: 180, tags: ["user-profile"] },
+);
 
-    const [postedTweet, repliedTweet] = await Promise.all([
-      prisma.tweet.count({
-        where: {
-          authorId: user.id,
-          parentId: null,
-        },
-      }),
-      prisma.tweet.count({
-        where: {
-          authorId: user.id,
-          parentId: { not: null },
-        },
-      }),
-    ]);
-
-    return {
-      success: true,
-      user: {
-        ...user,
-        postedTweet,
-        repliedTweet,
-      },
-    };
-  } catch (error) {
-    console.error("profile fetching error", error);
-    return { success: false, error: "failed to fetching user profile" };
-  }
-}
-
+/**
+ * Upload image to Cloudinary
+ */
 export async function uploadImageToCloudinary(file: File): Promise<string> {
-  let imageUrl: string | undefined;
-
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", "x_clone");
 
   const response = await fetch(
     `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-    {
-      method: "POST",
-      body: formData,
-    },
+    { method: "POST", body: formData },
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to upload image");
-  }
+  if (!response.ok) throw new Error("Failed to upload image");
 
   const data = await response.json();
   return data.secure_url;
 }
 
+/**
+ * Update user profile
+ */
 export async function updateUserProfile(data: {
   name: string;
   username: string;
   bio?: string;
-  avatar?: string | undefined;
-  banner?: string | undefined;
+  avatar?: string;
+  banner?: string;
 }) {
   const session = await getSession();
-  if (!session?.user) {
-    redirect("/signin");
-  }
+  if (!session?.user) redirect("/signin");
+
   try {
     if (data.username !== session.user.username) {
       const exitingUsername = await prisma.user.findUnique({
-        where: {
-          username: data.username,
-        },
+        where: { username: data.username },
       });
-      if (exitingUsername) {
+      if (exitingUsername)
         return { success: false, error: "username is already taken" };
-      }
     }
 
     const updatedUser = await prisma.user.update({
-      where: {
-        id: session.user.id,
-      },
+      where: { id: session.user.id },
       data: {
         name: data.name,
         username: data.username,
         bio: data.bio,
         avatar: data.avatar,
-        image: data.banner, // using image field for banner
+        image: data.banner,
       },
     });
+
+    // Revalidate caches
+    revalidateTag("user-profile", "max");
+    revalidateTag("user-tweets", "max");
+    revalidateTag("user-replies", "max");
+    revalidateTag("user-likes", "max");
+
     return { success: true, user: updatedUser };
   } catch (error) {
     console.error("Profile update error", error);
@@ -124,172 +109,136 @@ export async function updateUserProfile(data: {
   }
 }
 
-export async function getUserTweets(username: string) {
-  try {
-    const tweets = await prisma.tweet.findMany({
-      where: {
-        parentId: null,
-        author: {
-          username,
-        },
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            avatar: true,
+/**
+ * Fetch user's tweets
+ */
+export const getUserTweets = unstable_cache(
+  async (username: string) => {
+    try {
+      const tweets = await prisma.tweet.findMany({
+        where: { parentId: null, author: { username } },
+        include: {
+          author: {
+            select: { id: true, name: true, username: true, avatar: true },
           },
+          likes: true,
         },
-        likes: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+        orderBy: { createdAt: "desc" },
+      });
+      return { success: true, tweets };
+    } catch (error) {
+      console.error("fetch user tweets error", error);
+      return { success: false, error: "fetch user tweets error" };
+    }
+  },
+  ["user-tweets"],
+  { revalidate: 120, tags: ["user-tweets"] },
+);
 
-    return { success: true, tweets };
-  } catch (error) {
-    console.error("error fetching tweets", error);
-    return { success: false, error: "failed to fetch tweets" };
-  }
-}
-
-export async function getUserReplies(username: string) {
-  try {
-    const tweetsReplies = await prisma.tweet.findMany({
-      where: {
-        parentId: { not: null },
-        author: {
-          username,
-        },
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            avatar: true,
+/**
+ * Fetch user's tweet replies
+ */
+export const getUserReplies = unstable_cache(
+  async (username: string) => {
+    try {
+      const tweetsReplies = await prisma.tweet.findMany({
+        where: { parentId: { not: null }, author: { username } },
+        include: {
+          author: {
+            select: { id: true, name: true, username: true, avatar: true },
           },
+          likes: true,
         },
-        likes: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+        orderBy: { createdAt: "desc" },
+      });
+      return { success: true, tweetsReplies };
+    } catch (error) {
+      console.error("fetch user replies error", error);
+      return { success: false, error: "fetch user replies error" };
+    }
+  },
+  ["user-replies"],
+  { revalidate: 120, tags: ["user-replies"] },
+);
 
-    return { success: true, tweetsReplies };
-  } catch (error) {
-    console.error("error fetching tweets replies", error);
-    return { success: false, error: "failed to fetch tweets replies" };
-  }
-}
-
-export async function getUserLikes(username: string) {
-  try {
+/**
+ * Fetch tweets liked by user
+ */
+export const getUserLikes = unstable_cache(
+  async (username: string) => {
     const user = await prisma.user.findUnique({
-      where: {
-        username,
-      },
+      where: { username },
       select: { id: true },
     });
+    if (!user) return { success: false, error: "user not found" };
 
-    if (!user) {
-      return { success: false, error: "user not found" };
-    }
-
-    const userLiedTweets = await prisma.like.findMany({
-      where: {
-        userId: user.id,
-      },
-
+    const likes = await prisma.like.findMany({
+      where: { userId: user.id },
       include: {
         tweet: {
           include: {
             author: {
-              select: {
-                id: true,
-                name: true,
-                username: true,
-                avatar: true,
-              },
+              select: { id: true, name: true, username: true, avatar: true },
             },
             likes: true,
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
 
-    return { success: true, tweet: userLiedTweets.map((like) => like.tweet) };
-  } catch (error) {
-    console.error("error fetching user tweets liked", error);
-    return { success: false, error: "failed to fetch user tweets liked" };
-  }
-}
+    return { success: true, tweet: likes.map((like) => like.tweet) };
+  },
+  ["user-likes"],
+  { revalidate: 120, tags: ["user-likes"] },
+);
 
-export async function followUser(id: string) {
+/**
+ * Follow or unfollow a user
+ */
+export async function followUser(targetUserId: string) {
   const session = await getSession();
-  if (!session?.user) {
-    redirect("/signin");
-  }
+  if (!session?.user) redirect("/signin");
+  const userId = session.user.id;
 
-  if (session.user.id === id) {
+  if (userId === targetUserId)
     return { success: false, error: "you can't follow yourself" };
-  }
 
   try {
-    const exitingFollow = await prisma.follow.findUnique({
+    const existingFollow = await prisma.follow.findUnique({
       where: {
         followingId_followerId: {
-          followerId: session.user.id,
-          followingId: id,
+          followerId: userId,
+          followingId: targetUserId,
         },
       },
     });
-    if (exitingFollow) {
-      await prisma.follow.delete({
-        where: { id: exitingFollow.id },
-      });
 
+    if (existingFollow) {
+      await prisma.follow.delete({ where: { id: existingFollow.id } });
+      revalidateTag("user-profile", "max");
       return { success: true, action: "unfollow" };
-    } else {
-      await prisma.follow.create({
-        data: {
-          followerId: session.user.id,
-          followingId: id,
-        },
-      });
-
-      await createNotification("FOLLOW", id, session.user.id);
-
-      return { success: true, action: "followed" };
     }
+
+    await prisma.follow.create({
+      data: { followerId: userId, followingId: targetUserId },
+    });
+    await createNotification("FOLLOW", targetUserId, userId);
+    revalidateTag("user-profile", "max");
+
+    return { success: true, action: "followed" };
   } catch (error) {
     console.error("error follow user", error);
     return { success: false, error: "failed to follow" };
   }
 }
 
+/**
+ * Check if current user is following target user
+ */
 export async function checkFollowStatus(targetUserId: string) {
   const session = await getSession();
-  if (!session?.user) {
-    redirect("/signin");
-  }
-
-  if (!session?.user) {
-    return {
-      success: false,
-      auth: false,
-      error: "signin first",
-      isFollowing: false,
-    };
-  }
+  if (!session?.user) redirect("/signin");
 
   try {
     const followStatus = await prisma.follow.findUnique({
@@ -302,10 +251,10 @@ export async function checkFollowStatus(targetUserId: string) {
     });
     return { success: true, isFollowing: !!followStatus };
   } catch (error) {
-    console.error("failed to check following check", error);
+    console.error("failed to check follow status", error);
     return {
       success: false,
-      error: "failed to following check",
+      error: "failed to check follow status",
       isFollowing: false,
     };
   }

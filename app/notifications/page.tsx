@@ -7,9 +7,15 @@ import { getInitials } from "@/utils/get-initials";
 import Link from "next/link";
 import { formatTimeAgo } from "@/utils/formate-date";
 import NotificationObserver from "@/components/notification/notification-observer";
+import { getSession } from "@/lib/actions/server/auth/auth-actions";
+import { redirect } from "next/navigation";
 
 export default async function NotificationPage() {
-  const result = await getNotifications();
+  const session = await getSession();
+  if (!session?.user) {
+    redirect("/signin?callbackURL=/notifications");
+  }
+  const result = await getNotifications(session.user.id);
 
   if (!result.success) {
     return (
@@ -67,7 +73,7 @@ export default async function NotificationPage() {
           {notifications?.map((notification, key) => (
             <div
               key={key}
-              className={`p-4 hover:bg-muted/50 transition-colors ${notification.read ? "bg-blue-50/50" : ""}`}
+              className={`p-4 hover:bg-muted/50 transition-colors ${!notification.read ? "bg-blue-50/20" : ""}`}
             >
               <div className='flex items-start space-x-3'>
                 <div className='shrink-0'>

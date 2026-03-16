@@ -72,7 +72,7 @@ export default function Sidebar() {
                 className='justify-start px-4 w-full h-12'
               >
                 {item.icon === "notification" ? (
-                  <NotificationBadge />
+                  <NotificationBadge userId={session.data?.user.id} />
                 ) : (
                   <Icon className='mr-4 w-5 h-5' />
                 )}
